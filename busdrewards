@@ -1,0 +1,37 @@
+// SPDX-License-Identifier: MIT
+
+pragma solidity ^0.8.0;
+
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/IERC20.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/utils/SafeERC20.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol";
+
+contract BUSDReward is Ownable {
+    using SafeERC20 for IERC20;
+
+    IERC20 public busdToken;
+
+    uint256 public rewardAmount;
+
+    mapping(address => bool) public rewardedUsers;
+
+    event RewardDistributed(address indexed recipient, uint256 rewardAmount);
+
+    constructor(IERC20 _busdToken, uint256 _rewardAmount) {
+        busdToken = _busdToken;
+        rewardAmount = _rewardAmount;
+    }
+
+    function distributeReward(address recipient) external onlyOwner {
+        require(!rewardedUsers[recipient], "User has already been rewarded");
+
+        rewardedUsers[recipient] = true;
+
+        busdToken.safeTransfer(recipient, rewardAmount);
+
+        emit RewardDistributed(recipient, rewardAmount);
+    }
+
+    function setRewardAmount(uint256 _rewardAmount) external onlyOwner {
+        rewardAmount = _rewardAmount;
+    }
